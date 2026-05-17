@@ -211,7 +211,7 @@ export default function LandingPage() {
                   </AnimatePresence>
                 </button>
                 <Link
-                  href={hasUsername ? `/${trimmedUsername}` : '/'}
+                  href={hasUsername ? `/dashboard/${trimmedUsername}` : '/'}
                   aria-disabled={!hasUsername}
                   onClick={(e) => {
                     if (!hasUsername) e.preventDefault();
@@ -456,7 +456,7 @@ function SuccessGuide({
             monolith&apos;s colour palette.
           </p>
           <div className="mt-8 flex justify-center border-t border-white/5 pt-6">
-            <Link href={`/${username}`}>
+            <Link href={`/dashboard/${username}`}>
               <button className="bg-white text-black hover:bg-zinc-100 px-6 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 hover:scale-[1.01] active:scale-[0.99]">
                 Watch Your Dashboard
               </button>
