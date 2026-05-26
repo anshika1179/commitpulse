@@ -3,7 +3,7 @@ import { getLabels, type BadgeLabels } from '../i18n/badgeLabels';
 import { AUTO_DARK_THEME, AUTO_LIGHT_THEME } from './themes';
 import { TOWER_ANIMATION_CSS } from './animations';
 import { computeTowers, type TowerData } from './layout';
-import { sanitizeFont, sanitizeHexColor, sanitizeRadius } from './sanitizer';
+import { sanitizeFont, sanitizeHexColor, sanitizeRadius, sanitizeGoogleFontUrl } from './sanitizer';
 
 const SVG_WIDTH = 600;
 const SVG_HEIGHT = 420;
@@ -206,10 +206,11 @@ export function generateSVG(
       ? `"${sanitizedFont}", sans-serif`
       : null;
   const statsFont = selectedFont || '"Space Grotesk", sans-serif';
-  const googleFontsImport =
-    sanitizedFont && !isPredefinedFont
-      ? `@import url('https://fonts.googleapis.com/css2?family=${encodeURIComponent(sanitizedFont).replace(/%20/g, '+')}&amp;display=swap');`
-      : '';
+  const googleFontUrlPart =
+    sanitizedFont && !isPredefinedFont ? sanitizeGoogleFontUrl(sanitizedFont) : null;
+  const googleFontsImport = googleFontUrlPart
+    ? `@import url('https://fonts.googleapis.com/css2?family=${googleFontUrlPart}&amp;display=swap');`
+    : '';
 
   const sf = getSizeScale(params.size);
   const radius = sanitizeRadius(params.radius, 8) * sf;
@@ -361,10 +362,11 @@ export function generateMonthlySVG(stats: MonthlyStats, params: BadgeParams): st
   const width = params.width || 300;
   const height = params.height || 120;
 
-  const googleFontsImport =
-    sanitizedFont && !isPredefinedFont
-      ? `@import url('https://fonts.googleapis.com/css2?family=${encodeURIComponent(sanitizedFont).replace(/%20/g, '+')}&amp;display=swap');`
-      : '';
+  const googleFontUrlPart =
+    sanitizedFont && !isPredefinedFont ? sanitizeGoogleFontUrl(sanitizedFont) : null;
+  const googleFontsImport = googleFontUrlPart
+    ? `@import url('https://fonts.googleapis.com/css2?family=${googleFontUrlPart}&amp;display=swap');`
+    : '';
 
   let deltaText = '';
   if (params.delta_format === 'absolute') {
