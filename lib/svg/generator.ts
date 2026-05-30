@@ -305,7 +305,7 @@ function renderTowers(
           </g>
         </g>`;
 
-    if (t.contributionCount >= 10) {
+    if (t.contributionCount >= 10 && !params.disable_particles) {
       const pIdx = Math.min(t.intensityLevel - 1, accent.length - 1);
       const pColorResolved = Array.isArray(accent)
         ? accent[pIdx] || accent[accent.length - 1] || '00ffaa'

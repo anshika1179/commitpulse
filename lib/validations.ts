@@ -213,6 +213,10 @@ export const streakParamsSchema = z.object({
       return val === 'true';
     })
     .default(false),
+  disable_particles: z
+    .string()
+    .optional()
+    .transform((val) => val === 'true' || val === '1'),
 });
 
 export const githubParamsSchema = z.object({

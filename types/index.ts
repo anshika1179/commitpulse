@@ -184,4 +184,6 @@ export interface BadgeParams {
 
   /** Opt-in to show volumetric gradients on the monolith floor. */
   gradient?: boolean;
+
+  disable_particles?: boolean;
 }
