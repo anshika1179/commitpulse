@@ -433,5 +433,22 @@ describe('TTLCache', () => {
 
       cache.destroy();
     });
+    // FIX: New test targeting the NaN boundary for Issue #1399
+    it('resolves NaN TTL to the default standard TTL duration', () => {
+      vi.useFakeTimers();
+      const cache = new TTLCache<string>();
+
+      // Setting with NaN should not throw; it should fallback to the default TTL
+      expect(() => cache.set('nan-key', 'value', NaN)).not.toThrow();
+
+      // The item should be successfully stored
+      expect(cache.get('nan-key')).toBe('value');
+
+      // Advance by a small amount to ensure it didn't instantly expire
+      vi.advanceTimersByTime(1000);
+      expect(cache.get('nan-key')).toBe('value');
+
+      cache.destroy();
+    });
   });
 });
