@@ -115,7 +115,7 @@ describe('User Model', () => {
         if (mongoose.connection.readyState === 0) {
           throw new Error('Database is disconnected');
         }
-      }
+      };
 
       await expect(handleDisconnectedState()).rejects.toThrow('Database is disconnected');
 
