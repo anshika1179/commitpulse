@@ -29,19 +29,20 @@ export function getClientIp(
   const headers = request.headers;
 
   // 1. NextRequest has a secure, platform-populated request.ip property on Vercel/Next.js
-  if (request instanceof NextRequest && request.ip) {
+  const requestIp = (request as unknown as { ip?: string }).ip;
+  if (request instanceof NextRequest && requestIp) {
     const rawXff = headers.get('x-forwarded-for');
     if (rawXff) {
       const firstIp = rawXff.split(',')[0].trim();
-      if (firstIp && firstIp !== request.ip) {
+      if (firstIp && firstIp !== requestIp) {
         logSecurityEvent('SPOOFED_HEADER_ATTEMPT', {
           claimedIp: firstIp,
-          resolvedIp: request.ip,
+          resolvedIp: requestIp,
           header: 'x-forwarded-for',
         });
       }
     }
-    return request.ip;
+    return requestIp;
   }
 
   // 2. Process X-Forwarded-For securely if present
