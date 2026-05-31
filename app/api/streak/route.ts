@@ -9,6 +9,8 @@ import {
   generateSVG,
   generateMonthlySVG,
   generateVersusSVG,
+  generateHeatmapSVG,
+  generatePulseSVG,
 } from '@/lib/svg/generator';
 import { getSecondsUntilUTCMidnight, getSecondsUntilMidnightInTimezone } from '@/utils/time';
 import type { BadgeParams } from '@/types';
@@ -90,6 +92,7 @@ export async function GET(request: Request) {
       gradient,
       tz: tzParam,
       disable_particles,
+      glow,
     } = parseResult.data;
 
     const themeName = theme || 'dark';
@@ -127,7 +130,7 @@ export async function GET(request: Request) {
     const targetEntity = org || user;
     const borderParam = searchParams.get('border');
     const sanitizedBorder = borderParam ? borderParam.replace(/[^a-fA-F0-9]/g, '') : undefined;
-
+    const animate = searchParams.get('animate') !== 'false';
     const params: BadgeParams = {
       user: targetEntity,
       bg: isAutoTheme ? selectedTheme.bg : bg || selectedTheme.bg,
@@ -158,6 +161,8 @@ export async function GET(request: Request) {
       shading,
       gradient,
       disable_particles,
+      glow,
+      animate,
     };
 
     let calendar;
@@ -197,6 +202,14 @@ export async function GET(request: Request) {
         getMonthlyReferenceDate(year, timezone)
       );
       svg = generateMonthlySVG(stats, params);
+    } else if (view === 'heatmap') {
+      const stats = calculateStreak(calendar, timezone, undefined, grace);
+      svg = generateHeatmapSVG(stats, params, calendar);
+    } else if (view === 'pulse') {
+      // We still use calculateStreak here to efficiently parse totalContributions for the stat display,
+      // even though the sparkline generator will extract its own daily 30-day timeline below.
+      const stats = calculateStreak(calendar, timezone, undefined, grace);
+      svg = generatePulseSVG(stats, params, calendar);
     } else if (versus && versusCalendar) {
       const stats1 = calculateStreak(calendar, timezone, undefined, grace);
       const stats2 = calculateStreak(versusCalendar, timezone, undefined, grace);
