@@ -2,16 +2,13 @@ import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import { User } from '@/models/User';
 import { trackUserRateLimiter } from '@/lib/rate-limit';
+import { getClientIp } from '@/utils/getClientIp';
 
 export async function POST(req: Request) {
-  // Get IP for rate limiting.
-  // x-real-ip is provided by Vercel/Nginx as the true client IP.
-  // We fall back to the LAST IP in the x-forwarded-for chain, which is appended by the Vercel proxy.
-  const forwardedFor = req.headers.get('x-forwarded-for');
-  const fallbackIp = forwardedFor ? forwardedFor.split(',').pop()?.trim() : 'unknown';
-  const ip = req.headers.get('x-real-ip') || fallbackIp || 'unknown';
+  // Get IP for rate limiting securely
+  const ip = getClientIp(req);
 
-  if (ip !== 'unknown' && !(await trackUserRateLimiter.check(ip))) {
+  if (ip !== '127.0.0.1' && ip !== 'unknown' && !(await trackUserRateLimiter.check(ip))) {
     return NextResponse.json(
       { success: false, error: 'Too many requests, please try again later.' },
       { status: 429 }
