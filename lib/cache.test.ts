@@ -402,6 +402,17 @@ describe('TTLCache', () => {
       expect(cache.get('tags')).toEqual(tags);
       cache.destroy();
     });
+
+    it('stores and retrieves values using unicode cache keys', () => {
+      const cache = new TTLCache<string>();
+
+      cache.set('cache_🔥_key', 'octocat', 60_000);
+
+      expect(cache.get('cache_🔥_key')).toBe('octocat');
+
+      cache.destroy();
+    });
+
     it('preserves Date instance values in TTLCache', () => {
       const cache = new TTLCache<Date>();
 
