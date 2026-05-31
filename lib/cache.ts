@@ -5,7 +5,6 @@ type CacheItem<T> = {
   value: T;
   expiresAt: number;
 };
-
 /**
  * A Simple in-memory TTL(Time To Live) cache.
  *
@@ -16,8 +15,22 @@ type CacheItem<T> = {
  */
 export class TTLCache<T> {
   private store = new Map<string, CacheItem<T>>();
+
   private cleanupInterval: ReturnType<typeof setInterval> | null = null;
   private readonly maxSize?: number;
+  private assertValidKey(key: unknown): asserts key is string {
+    if (key === null || key === undefined) {
+      throw new TypeError('Cache key cannot be null or undefined');
+    }
+
+    if (typeof key !== 'string') {
+      throw new TypeError('Cache key cannot be null or undefined');
+    }
+
+    if (key.trim().length === 0) {
+      throw new TypeError('Cache key cannot be empty');
+    }
+  }
 
   /**
    * Creates a new TTL cache instance.
@@ -62,6 +75,9 @@ export class TTLCache<T> {
    * const user = cache.get("user:1");
    */
   get(key: string): T | null {
+    if (typeof key !== 'string' || key.trim().length === 0) {
+      return null;
+    }
     const hit = this.store.get(key);
     if (!hit) return null;
 
@@ -87,6 +103,9 @@ export class TTLCache<T> {
    * }
    */
   has(key: string): boolean {
+    if (typeof key !== 'string' || key.trim().length === 0) {
+      return false;
+    }
     const hit = this.store.get(key);
     if (!hit) return false;
 
@@ -109,6 +128,7 @@ export class TTLCache<T> {
    * cache.delete("user:1");
    */
   delete(key: string): boolean {
+    this.assertValidKey(key);
     return this.store.delete(key);
   }
 
@@ -134,6 +154,7 @@ export class TTLCache<T> {
    * @returns `true` if the entry existed and was updated, `false` if missing or expired.
    */
   update(key: string, value: T): boolean {
+    this.assertValidKey(key);
     const hit = this.store.get(key);
     if (!hit || Date.now() > hit.expiresAt) return false;
     hit.value = value;
@@ -141,7 +162,8 @@ export class TTLCache<T> {
   }
 
   set(key: string, value: T, ttlMs: number): void {
-    if (key === '') throw new Error('Cache key cannot be empty');
+    this.assertValidKey(key);
+
     if (ttlMs <= 0) throw new RangeError(`ttlMs must be positive, got ${ttlMs}`);
 
     const maxSize = this.maxSize;
