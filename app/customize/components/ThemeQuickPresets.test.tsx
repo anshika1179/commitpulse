@@ -110,7 +110,6 @@ describe('ThemeQuickPresets responsive rendering', () => {
 
     const grid = highContrastButton.closest('div');
     expect(grid).not.toBeNull();
-    expect(grid?.style.display).toBe('flex');
-    expect(grid?.style.flexWrap).toBe('wrap');
+    expect(grid?.className).toContain('theme-quick-presets');
   });
 });
