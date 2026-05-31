@@ -181,7 +181,16 @@ export const streakParamsSchema = z.object({
   grace: z.string().optional().transform(toGraceValue).default(1),
   mode: z.enum(['commits', 'loc']).catch('commits').default('commits'),
   repo: z.string().optional(),
-  org: z.string().optional(),
+  org: z
+    .string()
+    .optional()
+    .refine(
+      (val) => {
+        if (!val) return true;
+        return /^[a-zA-Z0-9](?:[a-zA-Z0-9]|-(?=[a-zA-Z0-9]))*$/.test(val);
+      },
+      { message: 'Invalid organization name format' }
+    ),
   labels: z.string().optional().transform(toBooleanFlag),
   labelColor: z
     .string()
