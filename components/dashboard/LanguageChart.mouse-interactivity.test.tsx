@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import LanguageChart from './LanguageChart';
+import LanguageChart, { buildGradientStops } from './LanguageChart';
 
 vi.mock('framer-motion', () => ({
   motion: {
@@ -35,51 +35,38 @@ const mockLanguages = [
 ];
 
 describe('LanguageChart Mouse Interactivity', () => {
-  it('renders donut chart successfully', () => {
+  it('renders empty state when no languages are provided', () => {
+    render(<LanguageChart languages={[]} />);
+
+    expect(screen.getByText(/No language data found/i)).toBeInTheDocument();
+  });
+
+  it('buildGradientStops generates correct gradient ranges', () => {
+    const result = buildGradientStops(mockLanguages);
+
+    expect(result).toContain('#3178c6 0% 72%');
+    expect(result).toContain('#f7df1e 72% 100%');
+  });
+
+  it('renders donut chart when language data exists', () => {
     render(<LanguageChart languages={mockLanguages} />);
 
     expect(screen.getByTestId('donut-chart')).toBeInTheDocument();
   });
 
-  it('renders primary language information', () => {
+  it('renders primary language information in chart center', () => {
     render(<LanguageChart languages={mockLanguages} />);
 
     expect(screen.getAllByText('TypeScript').length).toBeGreaterThan(0);
+
     expect(screen.getAllByText('72%').length).toBeGreaterThan(0);
   });
 
-  it('supports hover events on donut chart without crashing', () => {
+  it('renders all language rows with percentages', () => {
     render(<LanguageChart languages={mockLanguages} />);
-
-    const donut = screen.getByTestId('donut-chart');
-
-    fireEvent.mouseEnter(donut);
-    fireEvent.mouseMove(donut);
-    fireEvent.mouseLeave(donut);
-
-    expect(donut).toBeInTheDocument();
-  });
-
-  it('supports touch events on donut chart without crashing', () => {
-    render(<LanguageChart languages={mockLanguages} />);
-
-    const donut = screen.getByTestId('donut-chart');
-
-    fireEvent.touchStart(donut);
-    fireEvent.touchMove(donut);
-    fireEvent.touchEnd(donut);
-
-    expect(donut).toBeInTheDocument();
-  });
-
-  it('renders all language rows after interaction events', () => {
-    render(<LanguageChart languages={mockLanguages} />);
-
-    const donut = screen.getByTestId('donut-chart');
-
-    fireEvent.mouseEnter(donut);
 
     expect(screen.getByText('JavaScript')).toBeInTheDocument();
+
     expect(screen.getAllByText('28%').length).toBeGreaterThan(0);
   });
 });
