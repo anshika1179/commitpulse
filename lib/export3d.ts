@@ -56,6 +56,7 @@ export function activityToTowers(activity: ActivityData[]): TowerData[] {
       isToday: false,
       isTodayWithCommits: false,
       tooltip: `${day.date}: ${day.count} contributions`,
+      date: day.date,
       contributionCount: day.count,
       faceOpacity: { left: 1, right: 1, top: 1 },
       strokeOpacity: 1,
