@@ -17,7 +17,7 @@ beforeAll(() => {
 });
 
 // Mock framer-motion with proper prop propagation to preserve roles/ARIA/handlers
-/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any */
 vi.mock('framer-motion', () => ({
   motion: {
     div: ({
@@ -29,11 +29,11 @@ vi.mock('framer-motion', () => ({
       animate,
       exit,
       ...props
-    }: Record<string, unknown>) => <div {...props}>{children}</div>,
+    }: { children?: ReactNode } & Record<string, any>) => <div {...props}>{children}</div>,
   },
   AnimatePresence: ({ children }: { children?: ReactNode }) => <>{children}</>,
 }));
-/* eslint-enable @typescript-eslint/no-unused-vars */
+/* eslint-enable @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any */
 
 describe('Heatmap Accessibility Standards', () => {
   // Helper to generate properly typed mock data
