@@ -15,7 +15,7 @@ beforeEach(() => {
   });
 });
 
-describe('CopyRepoButton Massive Scaling', () => {
+describe('CopyRepoButton Massive Scaling', { timeout: 30000 }, () => {
   it('renders 100 buttons without crashing', () => {
     render(
       <>

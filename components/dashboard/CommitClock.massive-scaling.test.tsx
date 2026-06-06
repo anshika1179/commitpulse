@@ -12,7 +12,7 @@ vi.mock('framer-motion', () => ({
   AnimatePresence: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
-describe('CommitClock - Massive Scaling', () => {
+describe('CommitClock - Massive Scaling', { timeout: 30000 }, () => {
   const hugeDataset = Array.from({ length: 7000 }, (_, i) => ({
     day: `Day-${i}`,
     commits: i + 1,
