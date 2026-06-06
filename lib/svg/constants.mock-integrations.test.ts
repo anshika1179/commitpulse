@@ -28,6 +28,11 @@ describe('lib/svg/constants', () => {
       jetbrains: '"JetBrains Mono", monospace',
       fira: '"Fira Code", monospace',
       roboto: '"Roboto", sans-serif',
+      syncopate: '"Syncopate", sans-serif',
+      spacegrotesk: '"Space Grotesk", sans-serif',
+      'space grotesk': '"Space Grotesk", sans-serif',
+      firacode: '"Fira Code", monospace',
+      'jetbrains mono': '"JetBrains Mono", monospace',
     });
   });
 
