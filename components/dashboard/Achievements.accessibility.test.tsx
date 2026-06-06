@@ -6,7 +6,8 @@ import Achievements from './Achievements';
 // Mock framer-motion to avoid animation issues in tests
 vi.mock('framer-motion', () => ({
   motion: {
-    div: ({ children, className, ...props }: Record<string, unknown>) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    div: ({ children, className, ...props }: any) => {
       // Filter out framer-motion specific props to avoid warnings
       const validProps = Object.keys(props).reduce(
         (acc, key) => {
@@ -31,14 +32,19 @@ describe('Achievements Accessibility Standards & Screen Reader Aria Compliance',
     {
       id: '1',
       type: 'streak' as const,
+      icon: 'fire',
       title: 'First Streak',
       description: 'You got a streak',
       isUnlocked: true,
       date: '2023-01-01',
+      progress: 100,
+      threshold: 100,
+      currentValue: 100,
     },
     {
       id: '2',
       type: 'behavior' as const,
+      icon: 'owl',
       title: 'Night Owl',
       description: 'Coding at night',
       isUnlocked: false,
@@ -48,24 +54,36 @@ describe('Achievements Accessibility Standards & Screen Reader Aria Compliance',
     },
     {
       id: '3',
-      type: 'milestone' as const,
+      type: 'contributions' as const,
+      icon: 'star',
       title: 'Centurion',
       description: '100 commits',
       isUnlocked: true,
+      progress: 100,
+      threshold: 100,
+      currentValue: 100,
     },
     {
       id: '4',
       type: 'streak' as const,
+      icon: 'fire',
       title: 'On Fire',
       description: '10 day streak',
       isUnlocked: true,
+      progress: 100,
+      threshold: 100,
+      currentValue: 100,
     },
     {
       id: '5',
-      type: 'milestone' as const,
+      type: 'contributions' as const,
+      icon: 'star',
       title: 'Veteran',
       description: '1000 commits',
       isUnlocked: false,
+      progress: 0,
+      threshold: 1000,
+      currentValue: 0,
     },
   ];
 
