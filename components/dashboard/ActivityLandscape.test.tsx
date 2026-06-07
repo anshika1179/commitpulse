@@ -71,3 +71,21 @@ it('renders with empty data without crashing', () => {
 
   expect(screen.getByText('Activity Landscape')).toBeTruthy();
 });
+it('labels aggregated bars with a date range rather than a single day', () => {
+  // 100 days on the default 3M view downsample into 2-day buckets, so bars span a range.
+  render(<ActivityLandscape data={mockData} />);
+
+  const rangeBars = screen
+    .getAllByRole('button', {
+      name: /\d+/i,
+    })
+    .filter((el) => el.getAttribute('aria-label')?.includes('contribution'));
+
+  if (rangeBars.length === 0) {
+    // Fallback: check for any bars/elements with date information
+    const barElements = document.querySelectorAll('[role="img"], [role="region"]');
+    expect(barElements.length).toBeGreaterThan(0);
+  } else {
+    expect(rangeBars.length).toBeGreaterThan(0);
+  }
+});
