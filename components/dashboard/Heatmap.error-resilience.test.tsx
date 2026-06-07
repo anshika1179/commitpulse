@@ -1,6 +1,7 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi, beforeEach } from 'vitest';
+import { ErrorBoundary } from 'react-error-boundary';
 
 import Heatmap from './Heatmap';
 import type { ActivityData } from '@/types/dashboard';
@@ -8,6 +9,7 @@ import type { ActivityData } from '@/types/dashboard';
 // Mock framer-motion
 vi.mock('framer-motion', () => ({
   AnimatePresence: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+
   motion: {
     div: ({ children, className }: { children: React.ReactNode; className?: string }) => (
       <div className={className}>{children}</div>
@@ -22,43 +24,6 @@ global.ResizeObserver = class ResizeObserver {
   unobserve() {}
 };
 
-// Error Boundary
-class TestErrorBoundary extends React.Component<
-  { children: React.ReactNode },
-  { hasError: boolean }
-> {
-  constructor(props: { children: React.ReactNode }) {
-    super(props);
-
-    this.state = {
-      hasError: false,
-    };
-  }
-
-  static getDerivedStateFromError() {
-    return {
-      hasError: true,
-    };
-  }
-
-  componentDidCatch(error: Error) {
-    console.error(error);
-  }
-
-  render() {
-    if (this.state.hasError) {
-      return (
-        <div>
-          <p>Something went wrong</p>
-          <button>Retry</button>
-        </div>
-      );
-    }
-
-    return this.props.children;
-  }
-}
-
 const mockData: ActivityData[] = [
   {
     count: 5,
@@ -66,6 +31,8 @@ const mockData: ActivityData[] = [
     intensity: 2,
   },
 ];
+
+const fallbackUI = <div>Something went wrong</div>;
 
 describe('Heatmap Error Resilience', () => {
   beforeEach(() => {
@@ -75,15 +42,15 @@ describe('Heatmap Error Resilience', () => {
 
   it('maintains hydration stability during repeated renders', () => {
     const { rerender } = render(
-      <TestErrorBoundary>
+      <ErrorBoundary fallback={fallbackUI}>
         <Heatmap data={mockData} />
-      </TestErrorBoundary>
+      </ErrorBoundary>
     );
 
     rerender(
-      <TestErrorBoundary>
+      <ErrorBoundary fallback={fallbackUI}>
         <Heatmap data={mockData} />
-      </TestErrorBoundary>
+      </ErrorBoundary>
     );
 
     expect(screen.getByText(/contribution heatmap/i)).toBeInTheDocument();
@@ -95,39 +62,40 @@ describe('Heatmap Error Resilience', () => {
     };
 
     render(
-      <TestErrorBoundary>
+      <ErrorBoundary fallback={fallbackUI}>
         <ThrowingComponent />
-      </TestErrorBoundary>
+      </ErrorBoundary>
     );
 
-    expect(screen.getByText(/something went wrong/i)).toBeDefined();
+    expect(screen.getByText(/something went wrong/i)).toBeInTheDocument();
   });
 
   it('handles exceptions from Heatmap safely and logs telemetry', () => {
-    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
     render(
-      <TestErrorBoundary>
+      <ErrorBoundary fallback={fallbackUI}>
         <Heatmap data={undefined as unknown as ActivityData[]} />
-      </TestErrorBoundary>
+      </ErrorBoundary>
     );
 
-    expect(screen.getByText(/something went wrong/i)).toBeDefined();
-    expect(console.error).toHaveBeenCalled();
+    expect(screen.getByText(/something went wrong/i)).toBeInTheDocument();
+
+    expect(errorSpy).toHaveBeenCalled();
   });
 
-  it('provides recovery/reset controls in fallback UI', () => {
+  it('renders fallback UI for broken components safely', () => {
     const BrokenComponent = () => {
       throw new Error('Unexpected failure');
     };
 
     render(
-      <TestErrorBoundary>
+      <ErrorBoundary fallback={fallbackUI}>
         <BrokenComponent />
-      </TestErrorBoundary>
+      </ErrorBoundary>
     );
 
-    expect(screen.getByRole('button', { name: /retry/i })).toBeDefined();
+    expect(screen.getByText(/something went wrong/i)).toBeInTheDocument();
   });
 
   it('logs exceptions to telemetry trackers', () => {
@@ -138,9 +106,9 @@ describe('Heatmap Error Resilience', () => {
     };
 
     render(
-      <TestErrorBoundary>
+      <ErrorBoundary fallback={fallbackUI}>
         <CrashComponent />
-      </TestErrorBoundary>
+      </ErrorBoundary>
     );
 
     expect(errorSpy).toHaveBeenCalled();
