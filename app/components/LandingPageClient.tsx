@@ -406,12 +406,16 @@ export default function LandingPageClient() {
       return;
     }
 
+    // Create AbortController to manage fetch lifecycle
+    const abortController = new AbortController();
+
     const fetchDetails = async () => {
       setUserDetailsLoading(true);
       setUserDetailsError(null);
       try {
         const response = await fetch(
-          `/api/user-details?username=${encodeURIComponent(debouncedUsername)}`
+          `/api/user-details?username=${encodeURIComponent(debouncedUsername)}`,
+          { signal: abortController.signal }
         );
         if (!response.ok) {
           if (response.status === 404) {
@@ -421,17 +425,34 @@ export default function LandingPageClient() {
           throw new Error(errData.error || 'Failed to fetch user');
         }
         const data = await response.json();
-        setUserDetails(data);
+        // Only update state if the request wasn't aborted
+        if (!abortController.signal.aborted) {
+          setUserDetails(data);
+        }
       } catch (err) {
+        // Don't update state if the request was aborted (component unmount or new request)
+        if (err instanceof Error && err.name === 'AbortError') {
+          return;
+        }
         const message = err instanceof Error ? err.message : 'Failed to fetch user';
-        setUserDetails(null);
-        setUserDetailsError(message);
+        if (!abortController.signal.aborted) {
+          setUserDetails(null);
+          setUserDetailsError(message);
+        }
       } finally {
-        setUserDetailsLoading(false);
+        // Always clear loading state if not aborted
+        if (!abortController.signal.aborted) {
+          setUserDetailsLoading(false);
+        }
       }
     };
 
     fetchDetails();
+
+    // Cleanup: abort fetch when component unmounts or dependencies change
+    return () => {
+      abortController.abort();
+    };
   }, [debouncedUsername, mounted]);
 
   const copyToClipboard = async () => {
