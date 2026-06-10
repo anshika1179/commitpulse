@@ -27,9 +27,7 @@ describe('heatmapUtils Accessibility Standards & Screen Reader Aria Compliance',
     for (const intensity of [0, 1, 2, 3, 4]) {
       const { cell } = buildHeatmapCell(intensity);
 
-      expect(cell.getAttribute('aria-label')).toContain(
-        `${intensity} contributions`
-      );
+      expect(cell.getAttribute('aria-label')).toContain(`${intensity} contributions`);
       expect(cell.className).toContain(getIntensityColor(intensity));
     }
   });
@@ -61,9 +59,7 @@ describe('heatmapUtils Accessibility Standards & Screen Reader Aria Compliance',
       container.appendChild(cell);
     });
 
-    const focusableCells = Array.from(
-      container.querySelectorAll<HTMLButtonElement>('button')
-    );
+    const focusableCells = Array.from(container.querySelectorAll<HTMLButtonElement>('button'));
 
     expect(focusableCells).toHaveLength(5);
     expect(focusableCells.map((cell) => cell.dataset.testid)).toEqual([
@@ -90,11 +86,7 @@ describe('heatmapUtils Accessibility Standards & Screen Reader Aria Compliance',
     section.appendChild(subHeading);
 
     expect(section.getAttribute('aria-labelledby')).toBe('heatmap-heading');
-    expect(section.querySelector('h2')?.textContent).toBe(
-      'Contribution heatmap'
-    );
-    expect(section.querySelector('h3')?.textContent).toBe(
-      'Daily contribution activity'
-    );
+    expect(section.querySelector('h2')?.textContent).toBe('Contribution heatmap');
+    expect(section.querySelector('h3')?.textContent).toBe('Daily contribution activity');
   });
 });
