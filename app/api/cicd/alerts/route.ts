@@ -12,8 +12,30 @@ interface AlertConfigRequest {
   email?: string;
 }
 
+function verifyAuthToken(request: NextRequest): boolean {
+  const authHeader = request.headers.get('authorization');
+  if (!authHeader) return false;
+
+  const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : authHeader;
+  const expectedToken = process.env.CICD_ALERTS_SECRET || '';
+
+  if (!expectedToken) {
+    console.warn('CICD_ALERTS_SECRET not configured');
+    return false;
+  }
+
+  return token === expectedToken;
+}
+
 export async function POST(request: NextRequest) {
   try {
+    if (!verifyAuthToken(request)) {
+      return NextResponse.json(
+        { error: 'Unauthorized: Invalid or missing authentication token' },
+        { status: 401 }
+      );
+    }
+
     const body: AlertConfigRequest = await request.json();
 
     if (!body.repository) {
