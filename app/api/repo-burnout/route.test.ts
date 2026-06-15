@@ -66,7 +66,7 @@ describe('GET /api/repo-burnout', () => {
       'octocat',
       'hello-world',
       expect.objectContaining({
-        bypassCache: false,
+        bypassCache: true,
         token: undefined,
       })
     );
@@ -120,7 +120,7 @@ describe('GET /api/repo-burnout', () => {
       'octocat',
       'hello-world',
       expect.objectContaining({
-        bypassCache: true,
+        bypassCache: false,
         token: undefined,
       })
     );
