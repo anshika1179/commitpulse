@@ -55,7 +55,7 @@ export async function POST(req: Request) {
   let bodyText: string;
   try {
     bodyText = await req.text();
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Invalid payload' }, { status: 400 });
   }
 
@@ -75,10 +75,9 @@ export async function POST(req: Request) {
   }
 
   // Valid payload, proceed...
-  let payload;
   try {
-    payload = JSON.parse(bodyText);
-  } catch (error) {
+    JSON.parse(bodyText);
+  } catch {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
   }
 

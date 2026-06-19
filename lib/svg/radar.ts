@@ -2,7 +2,7 @@
 
 import type { BadgeParams, ContributionCalendar, StreakStats } from '../../types';
 import { deterministicRandom, truncateUsername, getSizeScale } from './generator';
-import { sanitizeHexColor, escapeXML } from './sanitizer';
+import { escapeXML } from './sanitizer';
 import { calculateWrappedStats, calculateMonthlyStats } from '../calculate';
 import {
   RADAR_SVG_WIDTH,

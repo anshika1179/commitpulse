@@ -1,14 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import {
-  THEME_KEYS,
-  SPEEDS,
-  SIZES,
-  FONTS,
-  VIEW_MODES,
-  DELTA_FORMATS,
-  LANGUAGES,
-  TIMEZONES,
-} from './types';
+import { THEME_KEYS, SIZES, TIMEZONES } from './types';
 
 function createCustomizeDOM(): HTMLDivElement {
   const container = document.createElement('div');

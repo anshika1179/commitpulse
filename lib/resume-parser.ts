@@ -122,8 +122,6 @@ async function extractTextFromBuffer(buffer: Buffer, mimeType: string): Promise<
       if (buffer.toString('utf-8', 0, 4) === '%PDF') {
         const pdfModule = (await import('pdf-parse')) as Record<string, unknown>;
 
-        console.debug('pdf-parse exports:', Object.keys(pdfModule));
-
         type PdfParser = (dataBuffer: Buffer, options?: unknown) => Promise<{ text: string }>;
 
         let pdfParser: PdfParser | null = null;

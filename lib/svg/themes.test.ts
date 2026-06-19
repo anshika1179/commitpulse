@@ -125,7 +125,7 @@ describe('hex validity — all theme color values must be valid 6-char hex strin
   });
 
   it('no theme has a hex value with a leading # (values must be without #)', () => {
-    for (const [name, theme] of themeEntries) {
+    for (const [, theme] of themeEntries) {
       expect(theme.bg.startsWith('#')).toBe(false);
       expect(theme.text.startsWith('#')).toBe(false);
       expect(theme.accent.startsWith('#')).toBe(false);
@@ -133,7 +133,7 @@ describe('hex validity — all theme color values must be valid 6-char hex strin
   });
 
   it('no theme has a hex value shorter than 6 characters', () => {
-    for (const [name, theme] of themeEntries) {
+    for (const [, theme] of themeEntries) {
       expect(theme.bg.length).toBeGreaterThanOrEqual(6);
       expect(theme.text.length).toBeGreaterThanOrEqual(6);
       expect(theme.accent.length).toBeGreaterThanOrEqual(6);

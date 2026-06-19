@@ -559,6 +559,7 @@ export function normalizeCalendarToTimezone(
   calendar: ContributionCalendar,
   targetTimezone: string
 ): ContributionCalendar {
+  void targetTimezone;
   if (!calendar || !calendar.weeks || calendar.weeks.length === 0) {
     return calendar;
   }

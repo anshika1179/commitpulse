@@ -5,6 +5,7 @@ import { Loader2, Search, X, ExternalLink, Info, Copy, Check, ChevronDown } from
 import { SectionCard, FieldLabel } from '../SectionCard';
 import { validateGitHubUsername } from '@/lib/validations';
 import { useDebounce } from '@/hooks/useDebounce';
+import Image from 'next/image';
 
 export interface ContributionGraphSectionProps {
   githubUsername: string;
@@ -452,8 +453,10 @@ jobs:
                           Snake graph not found. Setup the Action in your repo to load live data.
                         </p>
                       )}
-                      <img
+                      <Image
                         src={snakeUrl}
+                        width={400}
+                        height={100}
                         alt={`Snake Contribution Graph for ${debouncedUsername}`}
                         className={`w-full h-auto max-w-[400px] transition-opacity duration-300 ${
                           snakeLoaded ? 'opacity-100' : 'opacity-0 absolute'
@@ -497,8 +500,10 @@ jobs:
                           Pacman graph not found. Setup the Action in your repo to load live data.
                         </p>
                       )}
-                      <img
+                      <Image
                         src={pacmanUrl}
+                        width={400}
+                        height={100}
                         alt={`Pacman Contribution Graph for ${debouncedUsername}`}
                         className={`w-full h-auto max-w-[400px] transition-opacity duration-300 ${
                           pacmanLoaded ? 'opacity-100' : 'opacity-0 absolute'
