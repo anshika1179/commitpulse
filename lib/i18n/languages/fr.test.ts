@@ -2,18 +2,18 @@ import { describe, expect, it } from 'vitest';
 import { getLabels, labels } from '../badgeLabels';
 
 const requiredKeys = [
-  'CURRENT_STREAK',
-  'ANNUAL_SYNC_TOTAL',
-  'PEAK_STREAK',
+  'Current Streak',
+  'Annual Total',
+  'Peak Streak',
   'COMMITS_THIS_MONTH',
   'VS_LAST_MONTH',
 ] as const;
 
 const expectedFrenchLabels = {
-  CURRENT_STREAK: 'SÉRIE_ACTUELLE',
+  CURRENT_STREAK: 'Série Actuelle',
   ANNUAL_SYNC_TOTAL: 'TOTAL_ANNUEL',
   PEAK_STREAK: 'SÉRIE_MAXIMALE',
-  COMMITS_THIS_MONTH: 'COMMITS CE MOIS',
+  COMMITS_THIS_MONTH: 'Commits Ce Mois',
   VS_LAST_MONTH: 'vs mois dernier',
 };
 
