@@ -91,11 +91,11 @@ export function ip6ToBigInt(ip: string): bigint | null {
 
   if (parts.length !== 8) return null;
 
-  let intValue = 0n;
+  let intValue = BigInt(0);
   for (const part of parts) {
     const num = parseInt(part, 16);
     if (isNaN(num) || num < 0 || num > 0xffff) return null;
-    intValue = (intValue << 16n) + BigInt(num);
+    intValue = (intValue << BigInt(16)) + BigInt(num);
   }
 
   return intValue;
@@ -114,7 +114,7 @@ export function parseCidr6(cidr: string): ParsedCidr6 | null {
     if (rangeBigInt === null) return null;
 
     const shift = BigInt(128 - bits);
-    const mask = bits === 0 ? 0n : ((1n << BigInt(bits)) - 1n) << shift;
+    const mask = bits === 0 ? BigInt(0) : ((BigInt(1) << BigInt(bits)) - BigInt(1)) << shift;
 
     return { rangeBigInt, mask };
   } catch {
@@ -214,7 +214,7 @@ export function isTrustedProxy(ip: string, config: TrustedProxyConfig): boolean 
     const ipBigInt = ip6ToBigInt(sanitizedIp);
     if (ipBigInt !== null) {
       for (const { rangeBigInt, mask } of parsed.cidr6List) {
-        if (mask === 0n || (ipBigInt & mask) === (rangeBigInt & mask)) return true;
+        if (mask === BigInt(0) || (ipBigInt & mask) === (rangeBigInt & mask)) return true;
       }
     }
 

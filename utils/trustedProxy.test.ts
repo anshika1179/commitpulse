@@ -12,18 +12,18 @@ import {
 
 describe('IPv6 parsing utilities', () => {
   it('correctly converts IPv6 to BigInt', () => {
-    expect(ip6ToBigInt('::1')).toBe(1n);
-    expect(ip6ToBigInt('0:0:0:0:0:0:0:1')).toBe(1n);
-    expect(ip6ToBigInt('2001:db8::')).toBe(42540766411282592856903984951653826560n); // 2001:0db8 followed by 0s
-    expect(ip6ToBigInt('::')).toBe(0n);
+    expect(ip6ToBigInt('::1')).toBe(BigInt(1));
+    expect(ip6ToBigInt('0:0:0:0:0:0:0:1')).toBe(BigInt(1));
+    expect(ip6ToBigInt('2001:db8::')).toBe(BigInt('42540766411282592856903984951653826560')); // 2001:0db8 followed by 0s
+    expect(ip6ToBigInt('::')).toBe(BigInt(0));
     expect(ip6ToBigInt('invalid')).toBe(null);
   });
 
   it('correctly parses IPv6 CIDR', () => {
     const cidr = parseCidr6('2001:db8::/32');
     expect(cidr).not.toBeNull();
-    expect(cidr?.rangeBigInt).toBe(42540766411282592856903984951653826560n);
-    expect(cidr?.mask).toBe(340282366841710300949110269838224261120n); // 32 1s, 96 0s
+    expect(cidr?.rangeBigInt).toBe(BigInt('42540766411282592856903984951653826560'));
+    expect(cidr?.mask).toBe(BigInt('340282366841710300949110269838224261120')); // 32 1s, 96 0s
   });
 });
 
