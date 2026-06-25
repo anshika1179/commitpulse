@@ -574,8 +574,19 @@ function renderTowers(
       top: `M${ax_sf} ${rnd(ay_sf - hOffset)} L${bx_sf} ${rnd(by_sf - hOffset)} L${cx_sf} ${rnd(cy_sf - hOffset)} L${dx_sf} ${rnd(dy_sf - hOffset)} Z`,
     };
 
+    let shadowMarkup = '';
+    if (!isGhost && hOffset > 0) {
+      const vx = rnd(-hOffset * 0.7);
+      const vy = rnd(-hOffset * 0.35);
+      const shadowPath = `M${cx_sf} ${cy_sf} L${bx_sf} ${by_sf} L${rnd(bx_sf + vx)} ${rnd(by_sf + vy)} L${rnd(ax_sf + vx)} ${rnd(ay_sf + vy)} L${rnd(dx_sf + vx)} ${rnd(dy_sf + vy)} L${dx_sf} ${dy_sf} Z`;
+      const shadowColor = isAutoTheme ? 'var(--cp-negative, #000000)' : '#000000';
+      const shadowOpacity = parseFloat((0.15 * opacity).toFixed(2));
+      shadowMarkup = `<path d="${shadowPath}" fill="${shadowColor}" fill-opacity="${shadowOpacity}" />`;
+    }
+
     towers += `
         <g transform="translate(${towerX}, ${towerY})"${dimAttr}>
+          ${shadowMarkup}
           <g class="cp-tower interactive-tower" data-date="${escapeXML(t.date)}" data-count="${t.contributionCount}" data-metric="${escapeXML(metric)}" style="animation-delay: ${delay}s;">
             ${animate && t.isToday ? '<animate attributeName="opacity" values="1;0.4;1" dur="1.5s" repeatCount="indefinite" />' : ''}
             <title>${escapeXML(t.tooltip)}</title>
