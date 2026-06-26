@@ -760,6 +760,7 @@ export default function DashboardClient({
 
           <aside className="flex flex-col gap-6">
             <ContributionInsightsPanel
+              username={initialData.profile.username}
               stats={initialData.stats}
               activity={initialData.activity}
               periodLabel={period.label}
