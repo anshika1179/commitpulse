@@ -248,47 +248,32 @@ const PREDICTIONS = [
     accent: 'from-amber-400 to-orange-500',
   },
 ];
-
-// CountUp counter subcomponent
 function CountUp({ to, duration = 1800 }: { to: number; duration?: number }) {
-  // SSR hydration guard: server and client both render count=0
-  // so the initial markup matches. The animation starts only
-  // after hydration to prevent React hydration mismatches.
-  const [mounted, setMounted] = useState(false);
-  const [count, setCount] = useState(0);
+  const supportsObserver = typeof window !== 'undefined' && 'IntersectionObserver' in window;
+
+  const [count, setCount] = useState(() => (supportsObserver ? 0 : to));
 
   const elementRef = useRef<HTMLSpanElement>(null);
-  const hasAnimated = useRef(false);
+  const hasAnimated = useRef(!supportsObserver);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setMounted(true);
-  }, []);
-
-  useEffect(() => {
-    if (!mounted) return;
-
-    if (!('IntersectionObserver' in window)) {
-      setTimeout(() => {
-        setCount(to);
-      }, 0);
-      hasAnimated.current = true;
-      return;
-    }
+    if (!supportsObserver) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting && !hasAnimated.current) {
           hasAnimated.current = true;
+
           let start = 0;
           const end = to;
-          const totalMiliseconds = duration;
-          const incrementTime = Math.max(Math.floor(totalMiliseconds / 60), 10);
-          const steps = totalMiliseconds / incrementTime;
+          const totalMilliseconds = duration;
+          const incrementTime = Math.max(Math.floor(totalMilliseconds / 60), 10);
+          const steps = totalMilliseconds / incrementTime;
           const increment = Math.ceil(end / steps);
 
           const timer = setInterval(() => {
             start += increment;
+
             if (start >= end) {
               clearInterval(timer);
               setCount(end);
@@ -306,11 +291,10 @@ function CountUp({ to, duration = 1800 }: { to: number; duration?: number }) {
     }
 
     return () => observer.disconnect();
-  }, [to, duration, mounted]);
+  }, [to, duration, supportsObserver]);
 
   return <span ref={elementRef}>{count.toLocaleString()}</span>;
 }
-
 export default function DeveloperArena({ onSelectBattle }: DeveloperArenaProps) {
   const arenaRef = useRef<HTMLDivElement>(null);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
