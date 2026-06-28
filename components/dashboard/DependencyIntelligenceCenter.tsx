@@ -1,9 +1,9 @@
-﻿import React from 'react';
+import React from 'react';
 import { Card } from '../ui/card';
 
 export function DependencyIntelligenceCenter() {
   return (
-    <Card className="p-8 mt-8 border rounded-xl shadow-lg bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-slate-800 dark:to-slate-900">
+    <div className="p-8 mt-8 border rounded-xl shadow-lg bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-slate-800 dark:to-slate-900">
       <h2 className="text-3xl font-extrabold mb-6 text-gray-900 dark:text-white">
         Repository Dependency Intelligence Center
       </h2>
@@ -22,6 +22,6 @@ export function DependencyIntelligenceCenter() {
           </div>
         ))}
       </div>
-    </Card>
+    </div>
   );
 }
