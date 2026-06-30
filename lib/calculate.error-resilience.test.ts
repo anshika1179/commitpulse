@@ -1,4 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
+import type { ContributionCalendar } from '../types';
 import {
   convertLocalToUtc,
   getLocalTodayStr,
@@ -73,9 +74,11 @@ describe('calculate-error-resilience', () => {
       {
         totalContributions: 5,
         weeks: [],
-      },
-      null as unknown as Parameters<typeof aggregateCalendars>[0][number],
-      undefined as unknown as Parameters<typeof aggregateCalendars>[0][number],
+      } as ContributionCalendar,
+
+      null as unknown as ContributionCalendar,
+
+      undefined as unknown as ContributionCalendar,
     ]);
 
     expect(result.totalContributions).toBe(5);
