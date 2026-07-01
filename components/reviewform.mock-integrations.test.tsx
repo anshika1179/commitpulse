@@ -12,9 +12,9 @@ vi.mock('next/link', () => ({
 describe('Asynchronous Service Layer Mocking & Local Cache Stubs', () => {
   beforeEach(() => {
     // 1. Mock standard asynchronous imports and databases using stubs
-    global.fetch = vi.fn();
-    Storage.prototype.getItem = vi.fn();
-    Storage.prototype.setItem = vi.fn();
+    vi.spyOn(global, 'fetch').mockImplementation(vi.fn());
+    vi.spyOn(Storage.prototype, 'getItem').mockImplementation(vi.fn());
+    vi.spyOn(Storage.prototype, 'setItem').mockImplementation(vi.fn());
   });
 
   afterEach(() => {
