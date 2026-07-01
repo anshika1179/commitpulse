@@ -1,4 +1,28 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import {
+  fetchGitHubContributions,
+  fetchUserProfile,
+  fetchUserRepos,
+  fetchContributedRepos,
+  getFullDashboardData,
+  generateAchievements,
+  buildCommitClock,
+  clearGitHubApiCacheForTests,
+  GITHUB_CACHE_TTL_MS,
+  cacheKey,
+  displayName,
+  fetchOrgMembers,
+  getOrgDashboardData,
+  getWrappedData,
+  computeDeveloperScore,
+  runCappedConcurrency,
+  buildProfileData,
+  aggregateLanguages,
+  buildInsights,
+  buildActivityMap,
+  contributionsCache,
+} from './github';
+import type { ContributionCalendar } from '../types';
 
 vi.mock('server-only', () => ({}));
 
@@ -1584,6 +1608,9 @@ describe('GitHub API cache behavior', () => {
 
     expect(resolveFetchSpy).toHaveBeenCalledTimes(1);
     expect(results.map((result) => result.calendar.repoContributions)).toEqual([42, 42, 42]);
+  });
+});
+
 describe('configurable GitHub API constants', () => {
   it('GITHUB_CACHE_TTL_MS has a default of 5 minutes', async () => {
     const { GITHUB_CACHE_TTL_MS } = await import('./github');
