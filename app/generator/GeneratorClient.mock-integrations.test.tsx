@@ -52,7 +52,7 @@ function AsyncGeneratorWrapper({ username }: { username: string }) {
 
   useEffect(() => {
     let mounted = true;
-    setLoading(true);
+
     loadState(username)
       .then(() => {
         if (mounted) setLoading(false);
@@ -67,6 +67,7 @@ function AsyncGeneratorWrapper({ username }: { username: string }) {
           setLoading(false);
         }
       });
+
     return () => {
       mounted = false;
     };
