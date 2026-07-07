@@ -46,7 +46,7 @@ describe('ThemeSelector - TypeScript Compiler Validation & Schema Constraints St
   it('3. Optional property validation: verifies optional props can be omitted without compile errors', () => {
     // verify the exact type of the optional property
     expectTypeOf<StyledSelectProps['ariaLabel']>().toEqualTypeOf<string | undefined>();
-    
+
     // verify ThemeSelector has no optional props by extracting the required keys
     expectTypeOf<keyof ThemeSelectorProps>().toEqualTypeOf<'theme' | 'onThemeChange'>();
   });
