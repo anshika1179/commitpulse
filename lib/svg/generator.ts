@@ -11,7 +11,7 @@ import { getLabels, type BadgeLabels } from '../i18n/badgeLabels';
 import { AUTO_THEME_DARK, AUTO_THEME_LIGHT, themes } from './themes';
 import { getTowerAnimationCSS } from './animations';
 import { DEFAULT_FONTS_BASE64 } from './fonts';
-import { computeTowers, computeTowerHeight, type TowerData } from './layout';
+import { computeTowers, computeTeamTowers, type TowerData, computeTowerHeight } from './layout';
 import { LANGUAGE_COLORS } from './languageColors';
 import {
   sanitizeFont,
@@ -453,7 +453,8 @@ function renderTowers(
   sf: number,
   isAutoTheme: boolean = false,
   opacity: number = 1.0,
-  animate: boolean = true
+  animate: boolean = true,
+  isTeamMonolith: boolean = false
 ): string {
   let towers = '';
   const opacityMultipliers = [0.4, 0.6, 0.8, 1.0];
@@ -517,7 +518,11 @@ function renderTowers(
       const textColorHex = text.startsWith('#') ? text : `#${text}`;
 
       let resolvedSolidColor = isGhost ? textColorHex : accentColorHex;
-      if (!isGhost && t.intensityLevel > 0 && Array.isArray(accent)) {
+
+      if (isTeamMonolith && Array.isArray(accent)) {
+        const userColor = accent[t.col % accent.length] || '00ffaa';
+        resolvedSolidColor = userColor.startsWith('#') ? userColor : `#${userColor}`;
+      } else if (!isGhost && t.intensityLevel > 0 && Array.isArray(accent)) {
         const quartileIdx = Math.min(t.intensityLevel - 1, accent.length - 1);
         const quartileColor = accent[quartileIdx] || accent[accent.length - 1] || '00ffaa';
         resolvedSolidColor = quartileColor.startsWith('#') ? quartileColor : `#${quartileColor}`;
@@ -824,6 +829,15 @@ function renderIsometricLabels(
   return `<g class="isometric-labels">${elements}</g>`;
 }
 
+function renderTeamIsometricLabels(
+  individualCalendars: { user: string; calendar: ContributionCalendar }[],
+  params: BadgeParams,
+  color: string,
+  sf: number
+): string {
+  return renderIsometricLabels(individualCalendars[0].calendar, params, color, sf);
+}
+
 function getInlineMilestoneBadge(
   streak: number,
   s: (n: number) => number,
@@ -898,9 +912,10 @@ function renderMilestoneBadges(stats: StreakStats, params: BadgeParams, sf: numb
 export function generateSVG(
   stats: StreakStats,
   params: BadgeParams,
-  calendar: ContributionCalendar
+  calendar: ContributionCalendar,
+  individualCalendars?: { user: string; calendar: ContributionCalendar }[]
 ): string {
-  if (params.autoTheme) return generateAutoThemeSVG(stats, params, calendar);
+  if (params.autoTheme) return generateAutoThemeSVG(stats, params, calendar, individualCalendars);
   if (params.compact) return generateCompactSVG(stats, params);
 
   const rawBorderWidth = String(params.border || '').trim();
@@ -952,8 +967,11 @@ export function generateSVG(
   const W = Math.round(SVG_WIDTH * sf);
   const H = Math.round((labelVisible ? SVG_HEIGHT : SVG_HEIGHT - 40) * sf);
   const yOffset = params.label === false ? -40 : 0;
+  const isTeamMonolith = individualCalendars && individualCalendars.length > 1;
   const towerData = scaleTowerData(
-    computeTowers(calendar, params.scale, stats.todayDate, params.mode),
+    isTeamMonolith
+      ? computeTeamTowers(individualCalendars, params.scale, stats.todayDate, params.mode)
+      : computeTowers(calendar, params.scale, stats.todayDate, params.mode),
     sf
   );
   if (params.gradient) {
@@ -967,7 +985,8 @@ export function generateSVG(
     sf,
     false,
     params.opacity ?? 1.0,
-    animate
+    animate,
+    isTeamMonolith
   );
 
   const mainAccent = Array.isArray(accent)
@@ -987,7 +1006,11 @@ export function generateSVG(
   ${renderStyle(selectedFont, statsFont, googleFontsImport, text, mainAccentHex, sf, bg, params.entrance || 'rise')}
   ${renderBackgroundRect(params.hideBackground ? 'transparent' : bgFill, radius)}
   <g id="cp-towers" style="transform-origin: center; transform-box: fill-box;" transform="translate(0, ${Math.round((20 + yOffset) * sf)})" focusable="false">${towers}</g>
-  ${renderIsometricLabels(calendar, params, text, sf)}
+  ${
+    isTeamMonolith && individualCalendars
+      ? renderTeamIsometricLabels(individualCalendars, params, text, sf)
+      : renderIsometricLabels(calendar, params, text, sf)
+  }
   ${renderFooter(stats, params, labels, safeUser, mainAccentHex, sf)}
   ${renderMilestoneBadges(stats, params, sf)}
 </svg>`;
@@ -1068,7 +1091,8 @@ function generateCompactSVG(stats: StreakStats, params: BadgeParams): string {
 function generateAutoThemeSVG(
   stats: StreakStats,
   params: BadgeParams,
-  calendar: ContributionCalendar
+  calendar: ContributionCalendar,
+  individualCalendars?: { user: string; calendar: ContributionCalendar }[]
 ): string {
   const light = AUTO_THEME_LIGHT;
   const dark = AUTO_THEME_DARK;
@@ -1091,11 +1115,24 @@ function generateAutoThemeSVG(
   const labelVisible = params.label !== false;
   const H = Math.round((labelVisible ? SVG_HEIGHT : SVG_HEIGHT - 40) * sf);
   const yOffset = params.label === false ? -40 : 0;
+  const isTeamMonolith = individualCalendars && individualCalendars.length > 1;
   const towerData = scaleTowerData(
-    computeTowers(calendar, params.scale, stats.todayDate, params.mode),
+    isTeamMonolith
+      ? computeTeamTowers(individualCalendars, params.scale, stats.todayDate, params.mode)
+      : computeTowers(calendar, params.scale, stats.todayDate, params.mode),
     sf
   );
-  const towers = renderTowers(towerData, params, '', '', sf, true, params.opacity ?? 1.0);
+  const towers = renderTowers(
+    towerData,
+    params,
+    '',
+    '',
+    sf,
+    true,
+    params.opacity ?? 1.0,
+    true,
+    isTeamMonolith
+  );
 
   const s = createScaler(sf);
   const fs = (n: number): number => Math.round(n * sf * 10) / 10;
@@ -1174,7 +1211,11 @@ ${process.env.NODE_ENV === 'test' ? `@import url('https://fonts.googleapis.com/c
   <g id="cp-towers" style="transform-origin: center; transform-box: fill-box;" transform="translate(0, ${s(20 + yOffset)})" focusable="false">
     ${towers}
   </g>
-  ${renderIsometricLabels(calendar, params, 'var(--cp-text)', sf)}
+  ${
+    isTeamMonolith && individualCalendars
+      ? renderTeamIsometricLabels(individualCalendars, params, 'var(--cp-text)', sf)
+      : renderIsometricLabels(calendar, params, 'var(--cp-text)', sf)
+  }
   ${!params.hide_stats ? renderStatsSection(stats, labels, s, params) : ''}
 ${
   !params.hide_title && params.label !== false
