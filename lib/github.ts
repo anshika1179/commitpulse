@@ -791,7 +791,7 @@ export async function handleTokenExpiration(token: string): Promise<void> {
   }
 }
 
-const getHeaders = (userToken?: string) => ({
+export const getHeaders = (userToken?: string) => ({
   Authorization: `bearer ${userToken || getGitHubToken()}`,
   'Content-Type': 'application/json',
 });
@@ -2883,4 +2883,31 @@ function getMockRepo(repoName: string): GitHubRepo {
     forks_count: 0,
     participation: [],
   };
+}
+
+export async function checkGitHubHealth(): Promise<void> {
+  const query = `
+    query {
+      viewer {
+        login
+      }
+    }
+  `;
+
+  const response = await fetchWithRetry(GITHUB_GRAPHQL_URL, {
+    method: 'POST',
+    headers: getHeaders(),
+    body: JSON.stringify({ query }),
+    cache: 'no-store',
+  });
+
+  if (!response.ok) {
+    throw new Error(`GitHub API returned ${response.status}`);
+  }
+
+  const data = await response.json();
+
+  if (data.errors) {
+    throw new Error(getGraphQLErrorMessage(data.errors));
+  }
 }
