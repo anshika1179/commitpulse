@@ -27,6 +27,8 @@ describe('EditorPanel: Timezone Normalization & Calendar Data Boundary Alignment
           githubUsername: '',
           showCommitPulse: false,
           commitPulseAccent: '',
+          showRepoSpotlight: false,
+          spotlightRepo: '',
           showSnakeGraph: false,
           showPacmanGraph: false,
           graphPlacement: 'top',
