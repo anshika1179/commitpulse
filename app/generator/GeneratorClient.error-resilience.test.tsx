@@ -17,28 +17,28 @@ const defaultEditorPanel = vi.fn(
 );
 
 vi.mock('./components/EditorPanel', () => ({
-  EditorPanel: (...args: unknown[]) => defaultEditorPanel(...args),
+  EditorPanel: (props: Record<string, unknown>) => defaultEditorPanel(props),
 }));
 
 const defaultPreviewPanel = vi.fn(({ 'data-testid': testid }: Record<string, unknown>) => (
   <div data-testid={(testid as string) || 'preview-panel'}>Preview Panel</div>
 ));
 vi.mock('./components/PreviewPanel', () => ({
-  PreviewPanel: (...args: unknown[]) => defaultPreviewPanel(...args),
+  PreviewPanel: (props: Record<string, unknown>) => defaultPreviewPanel(props),
 }));
 
 const defaultCompletionScorePanel = vi.fn(({ 'data-testid': testid }: Record<string, unknown>) => (
   <div data-testid={(testid as string) || 'completion-score-panel'}>Completion Score Panel</div>
 ));
 vi.mock('./components/CompletionScorePanel', () => ({
-  CompletionScorePanel: (...args: unknown[]) => defaultCompletionScorePanel(...args),
+  CompletionScorePanel: (props: Record<string, unknown>) => defaultCompletionScorePanel(props),
 }));
 
 const defaultReadmeInsightsPanel = vi.fn(({ 'data-testid': testid }: Record<string, unknown>) => (
   <div data-testid={(testid as string) || 'readme-insights-panel'}>Readme Insights Panel</div>
 ));
 vi.mock('./components/ReadmeInsightsPanel', () => ({
-  ReadmeInsightsPanel: (...args: unknown[]) => defaultReadmeInsightsPanel(...args),
+  ReadmeInsightsPanel: (props: Record<string, unknown>) => defaultReadmeInsightsPanel(props),
 }));
 
 vi.mock('./components/ReadmeHealthBreakdown', () => ({
