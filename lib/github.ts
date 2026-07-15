@@ -562,6 +562,7 @@ type FetchOptions = {
   to?: string;
   rangeLabel?: string;
   signal?: AbortSignal;
+  org?: string;
   // Authenticated user's OAuth token. When set, GitHub calls use THIS token
   // (the user's personal rate-limit quota) instead of the global PAT pool.
   token?: string;
@@ -623,26 +624,36 @@ function sanitizeRepo(repo: GitHubRepo): GitHubRepo {
 export function cacheKey(
   kind: 'contributions' | 'profile' | 'repos' | 'repos:contributed',
   username: string,
-  year?: string
+  year?: string,
+  to?: string,
+  org?: string
 ): string;
 export function cacheKey(
   kind: 'contributions' | 'profile' | 'repos' | 'repos:contributed',
   username: string,
   from?: string,
-  to?: string
+  to?: string,
+  org?: string
 ): string;
 export function cacheKey(
   kind: 'contributions' | 'profile' | 'repos' | 'repos:contributed',
   username: string,
   yearOrFrom?: string,
-  to?: string
+  to?: string,
+  org?: string
 ): string {
+  let keyStr = '';
   if (yearOrFrom && to) {
-    return `${kind}:${username.toLowerCase()}:${yearOrFrom.substring(0, 10)}:${to.substring(0, 10)}`;
+    keyStr = `${kind}:${username.toLowerCase()}:${yearOrFrom.substring(0, 10)}:${to.substring(0, 10)}`;
+  } else if (yearOrFrom) {
+    keyStr = `${kind}:${username.toLowerCase()}:${yearOrFrom.substring(0, 4)}`;
+  } else {
+    keyStr = `${kind}:${username.toLowerCase()}`;
   }
-  return yearOrFrom
-    ? `${kind}:${username.toLowerCase()}:${yearOrFrom.substring(0, 4)}`
-    : `${kind}:${username.toLowerCase()}`;
+  if (org) {
+    keyStr += `:org:${org.toLowerCase()}`;
+  }
+  return keyStr;
 }
 
 export function clearGitHubApiCacheForTests(): void {
@@ -651,6 +662,7 @@ export function clearGitHubApiCacheForTests(): void {
   reposCache.clear();
   contributedReposCache.clear();
   rateLimitedTokens.clear();
+  orgNodeIdCache.clear();
   tokenStats.clear();
   pendingRefreshPromises.clear();
   currentTokenIndex = 0;
@@ -836,7 +848,7 @@ export async function fetchGitHubContributions(
   username: string,
   options: FetchOptions = {}
 ): Promise<ExtendedContributionData> {
-  const key = cacheKey('contributions', username, options.from, options.to);
+  const key = cacheKey('contributions', username, options.from, options.to, options.org);
   const LONG_CACHE_TTL = Number(
     process.env.GITHUB_LONG_CACHE_TTL_MS ?? String(7 * 24 * 60 * 60 * 1000)
   );
@@ -999,15 +1011,68 @@ export async function fetchGitHubContributions(
   }
 }
 
+const orgNodeIdCache = new Map<string, string>();
+
+async function fetchOrgNodeId(orgName: string, signal?: AbortSignal): Promise<string> {
+  const cacheKey = orgName.toLowerCase();
+  if (orgNodeIdCache.has(cacheKey)) {
+    return orgNodeIdCache.get(cacheKey)!;
+  }
+
+  const query = `
+    query($login: String!) {
+      organization(login: $login) {
+        id
+      }
+    }
+  `;
+
+  const res = await fetchGraphQLWithRetry(GITHUB_GRAPHQL_URL, {
+    method: 'POST',
+    headers: getHeaders(),
+    body: JSON.stringify({
+      query,
+      variables: { login: orgName },
+    }),
+    cache: 'no-store',
+    signal,
+  });
+
+  if (!res.ok) {
+    throwIfRateLimited(res);
+    const bodyText = await res.text().catch(() => '');
+    throw new Error(
+      `Failed to fetch organization ID for "${orgName}". Status: ${res.status}. Response: ${bodyText || '<empty>'}`
+    );
+  }
+
+  const data = await res.json();
+  if (data.errors) {
+    throw new Error(getGraphQLErrorMessage(data.errors));
+  }
+
+  const id = data.data?.organization?.id;
+  if (!id) {
+    throw new Error(`Organization "${orgName}" not found`);
+  }
+
+  orgNodeIdCache.set(cacheKey, id);
+  return id;
+}
+
 async function fetchContributionsUncached(
   username: string,
   key: string,
   options: FetchOptions
 ): Promise<ExtendedContributionData> {
+  let organizationId: string | undefined = undefined;
+  if (options.org) {
+    organizationId = await fetchOrgNodeId(options.org, options.signal);
+  }
   const query = `
-      query($login: String!, $from: DateTime, $to: DateTime) {
+      query($login: String!, $from: DateTime, $to: DateTime, $orgId: ID) {
         user(login: $login) {
-          contributionsCollection(from: $from, to: $to) {
+          contributionsCollection(from: $from, to: $to, organizationID: $orgId) {
             totalPullRequestContributions
             totalIssueContributions
             totalPullRequestReviewContributions
@@ -1045,7 +1110,7 @@ async function fetchContributionsUncached(
       headers: getHeaders(options.token),
       body: JSON.stringify({
         query,
-        variables: { login: username, from: options.from, to: options.to },
+        variables: { login: username, from: options.from, to: options.to, orgId: organizationId },
       }),
       cache: 'no-store',
       signal: options.signal,
@@ -2600,6 +2665,7 @@ export async function getWrappedData(
     to,
     bypassCache: options?.bypassCache ?? false,
     signal: options?.signal,
+    org: options?.org,
     token: options?.token,
   };
 

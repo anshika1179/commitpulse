@@ -100,7 +100,7 @@ export async function GET(request: Request) {
     );
   }
 
-  const { username, refresh, bypassCache: bypassCacheParam } = parseResult.data;
+  const { username, refresh, bypassCache: bypassCacheParam, org } = parseResult.data;
   // Treat either ?refresh=true or ?bypassCache=true as a cache-bypass request
   const isRefreshRequested = refresh || bypassCacheParam;
 
@@ -159,6 +159,7 @@ export async function GET(request: Request) {
     const data = await getFullDashboardData(username, {
       bypassCache: shouldBypassCache,
       signal: controller.signal,
+      org,
     });
 
     // 4. Stale-While-Revalidate background refresh for normal cached requests
