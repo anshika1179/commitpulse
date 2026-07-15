@@ -177,10 +177,13 @@ describe('fetchGitHubContributions', () => {
     const [url, options] = vi.mocked(fetch).mock.calls[0];
     expect(url).toBe('https://api.github.com/graphql');
     expect(options?.method).toBe('POST');
-    expect(options?.headers).toMatchObject({
-      Authorization: 'bearer ghp_testTokenAAAAAAAAAAAAAAAAAAAAAAAA',
-      'Content-Type': 'application/json',
-    });
+    const headers = new Headers(options?.headers);
+
+    const authHeader = headers.get('authorization');
+    expect(authHeader?.match(/^bearer\s+/i)).toBeTruthy();
+    expect(authHeader?.replace(/^bearer\s+/i, '')).toBe('ghp_testTokenAAAAAAAAAAAAAAAAAAAAAAAA');
+
+    expect(headers.get('content-type')).toBe('application/json');
 
     const body = JSON.parse(options?.body as string);
     expect(body.variables).toEqual({ login: 'octocat' });
@@ -206,9 +209,11 @@ describe('fetchGitHubContributions', () => {
     await fetchGitHubContributions('octocat');
 
     const [, options] = vi.mocked(fetch).mock.calls[0];
-    expect(options?.headers).toMatchObject({
-      Authorization: 'bearer ghp_actionsTokenAAAAAAAAAAAAAAAAAAAAA',
-    });
+    const headers = new Headers(options?.headers);
+
+    const authHeader = headers.get('authorization');
+    expect(authHeader?.match(/^bearer\s+/i)).toBeTruthy();
+    expect(authHeader?.replace(/^bearer\s+/i, '')).toBe('ghp_actionsTokenAAAAAAAAAAAAAAAAAAAAA');
   });
 
   it('verifies Authorization header uses GITHUB_TOKEN value in fallback path', async () => {
@@ -230,9 +235,11 @@ describe('fetchGitHubContributions', () => {
     await fetchGitHubContributions('octocat');
 
     const [, options] = vi.mocked(fetch).mock.calls[0];
-    expect(options?.headers).toMatchObject({
-      Authorization: 'bearer ghp_myActionsTokenAAAAAAAAAAAAAAAAAAA',
-    });
+    const headers = new Headers(options?.headers);
+
+    const authHeader = headers.get('authorization');
+    expect(authHeader?.match(/^bearer\s+/i)).toBeTruthy();
+    expect(authHeader?.replace(/^bearer\s+/i, '')).toBe('ghp_myActionsTokenAAAAAAAAAAAAAAAAAAA');
   });
 
   it('throws before fetching when no GitHub token is configured', async () => {
@@ -1270,8 +1277,8 @@ describe('getFullDashboardData', () => {
       const urlStr = typeof url === 'string' ? url : (url?.toString() ?? '');
 
       if (urlStr.includes('/actions/runs') || urlStr.includes('/deployments')) {
-        const headers = init?.headers as Record<string, string> | undefined;
-        capturedAuthHeaders.push(headers?.Authorization ?? '');
+        const headers = new Headers(init?.headers as HeadersInit | undefined);
+        capturedAuthHeaders.push(headers.get('authorization') ?? '');
         if (urlStr.includes('/actions/runs')) {
           return mockResponse({ workflow_runs: [] });
         }
@@ -1318,7 +1325,8 @@ describe('getFullDashboardData', () => {
 
     expect(capturedAuthHeaders.length).toBeGreaterThan(0);
     for (const authHeader of capturedAuthHeaders) {
-      expect(authHeader).toBe(`bearer ${userToken}`);
+      expect(authHeader?.match(/^bearer\s+/i)).toBeTruthy();
+      expect(authHeader?.replace(/^bearer\s+/i, '')).toBe(userToken);
     }
   });
   it('caps developerScore at 100 for extreme profile metrics', async () => {

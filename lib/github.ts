@@ -210,16 +210,20 @@ export async function fetchWithRetry(
   const isGitHubRequest = urlStr.includes('api.github.com');
   let currentToken = '';
 
+  let requestOptions: RequestInit = options;
+
   if (isGitHubRequest) {
     try {
       currentToken = userToken || getGitHubToken();
-      // Ensure your headers instantiation copies existing layout keys safely
-      options.headers = {
-        ...options.headers,
-        Authorization: `bearer ${currentToken}`,
+
+      const headers = new Headers(options.headers);
+      headers.set('Authorization', `Bearer ${currentToken}`);
+
+      requestOptions = {
+        ...options,
+        headers,
       };
     } catch (e) {
-      // Problem 3 Fix: Never swallow or compromise a structural RateLimitError instance
       if (e instanceof RateLimitError) {
         throw e;
       }
@@ -240,7 +244,7 @@ export async function fetchWithRetry(
   let didThrow = false;
 
   try {
-    res = await fetch(url, { ...options, signal: controller.signal });
+    res = await fetch(url, { ...requestOptions, signal: controller.signal });
   } catch (err: unknown) {
     fetchError = err;
     didThrow = true;
@@ -260,7 +264,7 @@ export async function fetchWithRetry(
     }
     const delay = getJitteredBackoff(attempt);
     await new Promise((resolve) => setTimeout(resolve, delay));
-    return fetchWithRetry(url, options, attempt + 1, timeoutMs, userToken);
+    return fetchWithRetry(url, requestOptions, attempt + 1, timeoutMs, userToken);
   }
 
   if (!res) throw new Error('GitHub API request failed without a response');
@@ -304,7 +308,7 @@ export async function fetchWithRetry(
     if (attempt < MAX_RETRIES && tokens.length > 1) {
       const delay = getJitteredBackoff(attempt);
       await new Promise((resolve) => setTimeout(resolve, delay));
-      return fetchWithRetry(url, options, attempt + 1, timeoutMs, userToken);
+      return fetchWithRetry(url, requestOptions, attempt + 1, timeoutMs, userToken);
     }
   }
 
@@ -356,7 +360,7 @@ export async function fetchWithRetry(
     }
 
     await new Promise((resolve) => setTimeout(resolve, delay));
-    return fetchWithRetry(url, options, attempt + 1, timeoutMs, userToken);
+    return fetchWithRetry(url, requestOptions, attempt + 1, timeoutMs, userToken);
   }
 
   // Only retry on 5xx — all other statuses are returned immediately
@@ -365,7 +369,7 @@ export async function fetchWithRetry(
 
   const delay = getJitteredBackoff(attempt);
   await new Promise((resolve) => setTimeout(resolve, delay));
-  return fetchWithRetry(url, options, attempt + 1, timeoutMs, userToken);
+  return fetchWithRetry(url, requestOptions, attempt + 1, timeoutMs, userToken);
 }
 
 const GRAPHQL_INJECTION_PATTERNS: RegExp[] = [
