@@ -34,8 +34,12 @@ describe('app/api/user-details/route.ts - Responsive Multi-device Columns & Mobi
     });
 
     // Default mocks for GitHub functions so they return promises
-    vi.mocked(github.fetchUserProfile).mockResolvedValue({} as Record<string, unknown>);
-    vi.mocked(github.fetchGitHubContributions).mockResolvedValue({} as Record<string, unknown>);
+    vi.mocked(github.fetchUserProfile).mockResolvedValue(
+      {} as unknown as Awaited<ReturnType<typeof github.fetchUserProfile>>
+    );
+    vi.mocked(github.fetchGitHubContributions).mockResolvedValue(
+      {} as unknown as Awaited<ReturnType<typeof github.fetchGitHubContributions>>
+    );
   });
 
   const createRequest = (url: string, ip: string | null = '127.0.0.1') => {
@@ -102,15 +106,16 @@ describe('app/api/user-details/route.ts - Responsive Multi-device Columns & Mobi
       name: 'Test User',
       avatar_url: 'https://example.com/avatar.png',
       public_repos: 10,
-    } as Record<string, unknown>);
+    } as unknown as Awaited<ReturnType<typeof github.fetchUserProfile>>);
     vi.mocked(github.fetchGitHubContributions).mockResolvedValueOnce({
       total: 100,
       calendar: [],
-    } as Record<string, unknown>);
+    } as unknown as Awaited<ReturnType<typeof github.fetchGitHubContributions>>);
     vi.mocked(calculate.calculateStreak).mockReturnValueOnce({
       currentStreak: 5,
       longestStreak: 10,
       totalContributions: 100,
+      todayDate: new Date().toISOString(),
     });
 
     const req = createRequest('http://localhost:3000/api/user-details?username=testuser');
