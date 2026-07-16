@@ -90,8 +90,10 @@ describe('ApiUserDetailsRoute - TypeScript Compiler Validation & Schema Constrai
       };
     };
 
-    // An optional name property should match the general structure
-    expectTypeOf<UserDetailsResponseWithOptionalName>().toMatchTypeOf<UserDetailsResponseSuccess>();
+    // UserDetailsResponseSuccess has 'name' as string | null (required).
+    // UserDetailsResponseWithOptionalName has 'name' as string | null | undefined (optional).
+    // Therefore, any UserDetailsResponseSuccess satisfies UserDetailsResponseWithOptionalName:
+    expectTypeOf<UserDetailsResponseSuccess>().toMatchTypeOf<UserDetailsResponseWithOptionalName>();
 
     // Test a response where name is not defined (optional)
     const validResponseMock: UserDetailsResponseWithOptionalName = {
@@ -106,7 +108,7 @@ describe('ApiUserDetailsRoute - TypeScript Compiler Validation & Schema Constrai
       },
     };
 
-    expectTypeOf(validResponseMock).toMatchTypeOf<UserDetailsResponseSuccess>();
+    expectTypeOf(validResponseMock).toEqualTypeOf<UserDetailsResponseWithOptionalName>();
   });
 
   // Case 4: Verify schema validation constraints return strict validation reports on violation
