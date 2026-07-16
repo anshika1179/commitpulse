@@ -1,3 +1,4 @@
+// @ts-expect-error - rss-parser lacks types
 import Parser from 'rss-parser';
 
 export interface Article {
@@ -33,17 +34,19 @@ export async function fetchLatestArticles(
     const feed = await parser.parseURL(feedUrl);
 
     // Get the top 3 articles
-    const articles = feed.items.slice(0, 3).map((item) => ({
-      title: item.title || 'Untitled',
-      link: item.link || '',
-      pubDate: item.pubDate
-        ? new Date(item.pubDate).toLocaleDateString(undefined, {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric',
-          })
-        : '',
-    }));
+    const articles = feed.items
+      .slice(0, 3)
+      .map((item: { title?: string; link?: string; pubDate?: string }) => ({
+        title: item.title || 'Untitled',
+        link: item.link || '',
+        pubDate: item.pubDate
+          ? new Date(item.pubDate).toLocaleDateString(undefined, {
+              year: 'numeric',
+              month: 'short',
+              day: 'numeric',
+            })
+          : '',
+      }));
 
     return articles;
   } catch (error) {

@@ -12,6 +12,7 @@ describe('PreviewPanel Type Compiler Validation', () => {
 
     expectTypeOf<Props>().toMatchObjectType<{
       markdown: string;
+      hasContent?: boolean;
     }>();
   });
 
@@ -24,6 +25,7 @@ describe('PreviewPanel Type Compiler Validation', () => {
   it('supports compile-time validation for component props', () => {
     const validProps: React.ComponentProps<typeof PreviewPanel> = {
       markdown: '# Hello World',
+      hasContent: true,
     };
 
     expect(validProps.markdown).toBe('# Hello World');
@@ -31,6 +33,7 @@ describe('PreviewPanel Type Compiler Validation', () => {
     const invalidProps: React.ComponentProps<typeof PreviewPanel> = {
       // @ts-expect-error - markdown must be a string
       markdown: 123,
+      hasContent: true,
     };
 
     expect(invalidProps).toBeDefined();
@@ -41,6 +44,7 @@ describe('PreviewPanel Type Compiler Validation', () => {
   it('accepts a valid props object', () => {
     const props: React.ComponentProps<typeof PreviewPanel> = {
       markdown: 'Sample markdown',
+      hasContent: true,
     };
 
     expect(props.markdown).toBe('Sample markdown');
