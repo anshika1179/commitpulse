@@ -1,6 +1,23 @@
+import type { GeneratorState } from '../types';
 import { describe, it, expectTypeOf, expect } from 'vitest';
 import React from 'react';
 import { PreviewPanel } from './PreviewPanel';
+
+const mockState: GeneratorState = {
+  name: '',
+  description: '',
+  selectedTechs: [],
+  selectedSocials: [],
+  socialLinks: {},
+  githubUsername: 'test',
+  showCommitPulse: false,
+  commitPulseAccent: '',
+  showRepoSpotlight: false,
+  spotlightRepo: '',
+  showSnakeGraph: false,
+  showPacmanGraph: false,
+  graphPlacement: 'bottom',
+};
 
 describe('PreviewPanel Type Compiler Validation', () => {
   it('exports PreviewPanel as a callable React component', () => {
@@ -12,6 +29,7 @@ describe('PreviewPanel Type Compiler Validation', () => {
 
     expectTypeOf<Props>().toMatchObjectType<{
       markdown: string;
+      state: GeneratorState;
       hasContent?: boolean;
     }>();
   });
